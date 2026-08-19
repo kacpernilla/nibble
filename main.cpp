@@ -34,28 +34,34 @@ class CPU {
         uint8_t opcode = fetch();
 
         switch(opcode) {
-            case 0x01: {
+            case 0x01: { // mov
                 uint8_t destination = fetch();
                 uint8_t value = fetch();
                 MOV(destination, value);
                 break;
             }
 
-            case 0x02: {
+            case 0x02: { // add
                 uint8_t dest = fetch();
                 uint8_t src = fetch();
                 ADD(dest, src);
                 break;
             }
             
-            case 0x03: {
+            case 0x03: { // sub
                 uint8_t dest = fetch();
                 uint8_t src = fetch();
                 SUB(dest, src);
                 break;
             }
 
-            case 0xFF: {
+            case 0x06: { // jmp
+                auto destination_pc = fetch();
+                JMP(destination_pc);
+                break;
+            }
+
+            case 0xFF: { // halt
                 HALT();
                 break;
             }
@@ -69,7 +75,8 @@ class CPU {
 
 
     // ALU 
-    void ADD(uint8_t destination_reg, uint8_t source_reg) { registers[destination_reg] += registers[source_reg]; }
+    // void ADD(uint8_t destination_reg, uint8_t source_reg) { registers[destination_reg] += registers[source_reg]; }
+    void ADD(uint8_t destination_reg, int value) { registers[destination_reg] += value; }
     // napisac jeszcze jednego ADD dla register+int np r1 + 12
     void SUB(uint8_t destination_reg, uint8_t source_reg) { registers[destination_reg] -= registers[source_reg]; }
     // void AND();
@@ -81,9 +88,8 @@ class CPU {
     // void CMP();
     //      ^todo
 
-    void JMP(uint8_t destination_register) { this->pc = destination_register; }
-
-    void print(uint8_t reg_num) { std::cout << (int)registers[reg_num]; } 
+    void JMP(uint8_t destination_pc) { this->pc = destination_pc; }
+    void print(uint8_t reg_num) { std::cout << (int)registers[reg_num] << std::endl; } 
     //                                          ^^^
     // trzeba rzutowac na int bo uint8_t to unsigned char
 
@@ -112,25 +118,26 @@ int main(void){
     HALT */
     CPU cpu;
 
+    /* instruction list */
     cpu.memory[0] = MOV;
     cpu.memory[1] = 0;
-    cpu.memory[2] = 40;
+    cpu.memory[2] = 10;
 
-    cpu.memory[3] = MOV;
-    cpu.memory[4] = 1;
-    cpu.memory[5] = 20;
+    cpu.memory[3] = ADD;
+    cpu.memory[4] = 0;
+    cpu.memory[5] = 2;
 
-    cpu.memory[6] = SUB;
-    cpu.memory[7] = 0;
-    cpu.memory[8] = 1;
+    cpu.memory[6] = JMP;
+    cpu.memory[7] = 3;
 
     cpu.memory[9] = HALT;
 
     while(!cpu.halt){
         cpu.step();
+        // std::cout << "active";
+        cpu.print(0);
     }
 
-    cpu.print(0);
     std::cout << "\n";
 
     return 0;
