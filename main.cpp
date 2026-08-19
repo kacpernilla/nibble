@@ -48,6 +48,13 @@ class CPU {
                 break;
             }
             
+            case 0x03: {
+                uint8_t dest = fetch();
+                uint8_t src = fetch();
+                SUB(dest, src);
+                break;
+            }
+
             case 0xFF: {
                 HALT();
                 break;
@@ -60,11 +67,28 @@ class CPU {
     void MOV(uint8_t destination, int value) { registers[destination] = value; }
     // void MOV(uint8_t destination, uint8_t source_register) { registers[destination] = registers[source_register]; }
 
+
+    // ALU 
     void ADD(uint8_t destination_reg, uint8_t source_reg) { registers[destination_reg] += registers[source_reg]; }
+    // napisac jeszcze jednego ADD dla register+int np r1 + 12
+    void SUB(uint8_t destination_reg, uint8_t source_reg) { registers[destination_reg] -= registers[source_reg]; }
+    // void AND();
+    // void OR();
+    // void XOR();
+    // void NOT();
+    // void SHL();
+    // void SHR();
+    // void CMP();
+    //      ^todo
+
+    void JMP(uint8_t destination_register) { this->pc = destination_register; }
 
     void print(uint8_t reg_num) { std::cout << (int)registers[reg_num]; } 
     //                                          ^^^
     // trzeba rzutowac na int bo uint8_t to unsigned char
+
+
+    // wpasc na bystrzejszy sposob organizacji kodu
 };
 
 
@@ -90,13 +114,13 @@ int main(void){
 
     cpu.memory[0] = MOV;
     cpu.memory[1] = 0;
-    cpu.memory[2] = 10;
+    cpu.memory[2] = 40;
 
     cpu.memory[3] = MOV;
     cpu.memory[4] = 1;
     cpu.memory[5] = 20;
 
-    cpu.memory[6] = ADD;
+    cpu.memory[6] = SUB;
     cpu.memory[7] = 0;
     cpu.memory[8] = 1;
 
