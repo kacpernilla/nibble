@@ -62,8 +62,8 @@ class CPU {
             }
 
             case 0x09: { // push
-                uint8_t value = fetch();
-                PUSH(value);
+                uint16_t value = fetch();
+                PUSH16(value);
                 break;
             }
 
@@ -108,8 +108,17 @@ class CPU {
     //      ^todo
 
     void JMP(uint8_t destination_pc) { this->pc = destination_pc; }
-    void PUSH(uint8_t value) { memory[sp--] = value; }
+    void PUSH(uint16_t value) { memory[sp--] = value; }
+    void PUSH16(uint16_t value) {
+        memory[sp--] = value & 0xFF;
+        memory[sp--] = value >> 8;
+    }
     uint8_t POP() { return memory[++sp]; }
+    uint16_t POP16() {
+        uint16_t lower = memory[++sp]; 
+        uint16_t upper = memory[++sp]; 
+        return lower | (upper<< 8);
+    }
     void CALL(uint16_t destination) {
         PUSH(this->pc);
         JMP(destination);
