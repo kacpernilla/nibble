@@ -17,7 +17,7 @@ class CPU {
     public:
     uint8_t registers[8] {};
     uint16_t pc {};
-    uint16_t sp {};
+    uint16_t sp {4095}; // stack pointer; lifo; liczona od konca
     uint8_t flags {};
 
     uint8_t memory[4096] {};
@@ -56,8 +56,26 @@ class CPU {
             }
 
             case 0x06: { // jmp
-                auto destination_pc = fetch();
+                uint8_t destination_pc = fetch();
                 JMP(destination_pc);
+                break;
+            }
+
+            case 0x09: { // push
+                uint8_t value = fetch();
+                PUSH(value);
+                break;
+            }
+
+            case 0x10: { // call
+                uint8_t value = fetch();
+                PUSH(value);
+                break;
+            }
+
+            case 0x11: { // ret
+                uint8_t value = fetch();
+                PUSH(value);
                 break;
             }
 
@@ -78,6 +96,7 @@ class CPU {
     // void ADD(uint8_t destination_reg, uint8_t source_reg) { registers[destination_reg] += registers[source_reg]; }
     void ADD(uint8_t destination_reg, int value) { registers[destination_reg] += value; }
     // napisac jeszcze jednego ADD dla register+int np r1 + 12
+    // void ADD(uint8_t destination_reg, uint8_t source_reg) { registers[destination_reg] += registers[source_reg]; }
     void SUB(uint8_t destination_reg, uint8_t source_reg) { registers[destination_reg] -= registers[source_reg]; }
     // void AND();
     // void OR();
@@ -89,12 +108,20 @@ class CPU {
     //      ^todo
 
     void JMP(uint8_t destination_pc) { this->pc = destination_pc; }
+    void PUSH(uint8_t value) { memory[sp--] = value; }
+    uint8_t POP() { return memory[++sp]; }
+    void CALL(uint16_t destination) {
+        PUSH(this->pc);
+        JMP(destination);
+    }
+    void RET() { JMP(POP()); }
+
     void print(uint8_t reg_num) { std::cout << (int)registers[reg_num] << std::endl; } 
     //                                          ^^^
     // trzeba rzutowac na int bo uint8_t to unsigned char
 
 
-    // wpasc na bystrzejszy sposob organizacji kodu
+    // TODO: wpasc na bystrzejszy sposob organizacji kodu; np by moc przeciazac funkcje; zeby nie musiec pisac takich dlugich stwitchy dla kazdego z przypadkow
 };
 
 
@@ -107,12 +134,15 @@ enum ISA {
     JMP   = 0x06,
     CMP   = 0x07,
     JZ    = 0x08,
+    PUSH  = 0x09,
+    CALL  = 0x10,
+    RET   = 0x11,
     HALT  = 0xFF
 };
 
 
 int main(void){
-    /*MOV r0, 10
+  /*MOV r0, 10
     MOV r1, 20
     ADD r0, r1
     HALT */
