@@ -35,9 +35,16 @@ class CPU {
 
         switch(opcode) {
             case 0x01: {
-                uint8_t first = fetch();
-                uint8_t second = fetch();
-                MOV(first, second);
+                uint8_t destination = fetch();
+                uint8_t value = fetch();
+                MOV(destination, value);
+                break;
+            }
+
+            case 0x02: {
+                uint8_t dest = fetch();
+                uint8_t src = fetch();
+                ADD(dest, src);
                 break;
             }
             
@@ -49,8 +56,15 @@ class CPU {
     }
 
     void HALT() { this->halt = true; }
-    void MOV(std::size_t register_number, int value) { registers[register_number] = value; }
-    void MOV(std::size_t register_number_dst, std::size_t register_number_src) { registers[register_number_dst] = registers[register_number_src]; }
+
+    void MOV(uint8_t destination, int value) { registers[destination] = value; }
+    // void MOV(uint8_t destination, uint8_t source_register) { registers[destination] = registers[source_register]; }
+
+    void ADD(uint8_t destination_reg, uint8_t source_reg) { registers[destination_reg] += registers[source_reg]; }
+
+    void print(uint8_t reg_num) { std::cout << (int)registers[reg_num]; } 
+    //                                          ^^^
+    // trzeba rzutowac na int bo uint8_t to unsigned char
 };
 
 
@@ -76,14 +90,23 @@ int main(void){
 
     cpu.memory[0] = MOV;
     cpu.memory[1] = 0;
-    cpu.memory[2] = 20;
-    cpu.memory[3] = HALT;
+    cpu.memory[2] = 10;
+
+    cpu.memory[3] = MOV;
+    cpu.memory[4] = 1;
+    cpu.memory[5] = 20;
+
+    cpu.memory[6] = ADD;
+    cpu.memory[7] = 0;
+    cpu.memory[8] = 1;
+
+    cpu.memory[9] = HALT;
 
     while(!cpu.halt){
         cpu.step();
-        std::cout << "active ";
     }
 
+    cpu.print(0);
     std::cout << "\n";
 
     return 0;
