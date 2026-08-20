@@ -69,18 +69,23 @@ class CPU {
 
             case 0x10: { // call
                 uint8_t value = fetch();
-                PUSH(value);
+                CALL(value);
                 break;
             }
 
             case 0x11: { // ret
-                uint8_t value = fetch();
-                PUSH(value);
+                RET();
                 break;
             }
 
             case 0xFF: { // halt
                 HALT();
+                break;
+            }
+            default: {
+                pc = pc + 1;
+                //pomijanie tury jesli insrukcja jest bledna :)
+                //moze kiedys zmienic na HALT; zobaczymy
                 break;
             }
         }
@@ -108,22 +113,22 @@ class CPU {
     //      ^todo
 
     void JMP(uint8_t destination_pc) { this->pc = destination_pc; }
-    void PUSH(uint16_t value) { memory[sp--] = value; }
+    void PUSH(uint8_t value) { memory[sp--] = value; }
     void PUSH16(uint16_t value) {
         memory[sp--] = value & 0xFF;
         memory[sp--] = value >> 8;
     }
     uint8_t POP() { return memory[++sp]; }
     uint16_t POP16() {
-        uint16_t lower = memory[++sp]; 
-        uint16_t upper = memory[++sp]; 
-        return lower | (upper<< 8);
+        uint16_t upper = memory[++sp];
+        uint16_t lower = memory[++sp];
+        return lower | (upper << 8);
     }
     void CALL(uint16_t destination) {
         PUSH(this->pc);
         JMP(destination);
     }
-    void RET() { JMP(POP()); }
+    void RET() { JMP(POP16()); }
 
     void print(uint8_t reg_num) { std::cout << (int)registers[reg_num] << std::endl; } 
     //                                          ^^^
